@@ -1,4 +1,4 @@
-package ru.job4j.recommendation;
+package ru.job4j.bmb.recommendation;
 
 /*
 Система рекомендаций
