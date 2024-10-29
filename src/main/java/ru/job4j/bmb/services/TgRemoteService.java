@@ -66,4 +66,5 @@ public class TgRemoteService extends TelegramLongPollingBot {
                 e.printStackTrace();
             }
         }
-    }}
+    }
+}
