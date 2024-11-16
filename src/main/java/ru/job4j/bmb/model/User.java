@@ -46,7 +46,9 @@ public class User {
             return false;
         }
         User user = (User) o;
-        return id == user.id && clientId == user.clientId && chatId == user.chatId;
+        return id == user.id
+                && clientId == user.clientId
+                && chatId == user.chatId;
     }
 
     @Override
