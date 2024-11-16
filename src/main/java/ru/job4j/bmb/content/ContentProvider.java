@@ -1,4 +1,4 @@
-package ru.job4j.bmb.recommendation;
+package ru.job4j.bmb.content;
 
 /*
 Система рекомендаций
@@ -7,4 +7,5 @@ package ru.job4j.bmb.recommendation;
  */
 
 public interface ContentProvider {
+    Content byMood(Long chatId, Long moodId);
 }
