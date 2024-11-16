@@ -19,7 +19,7 @@ public class UserFakeRepository implements UserRepository {
     }
 
     @Override
-    public User findByClientid(Long clientId) {
+    public User findByClientId(Long clientId) {
         return userMap.get(clientId);
     }
 
