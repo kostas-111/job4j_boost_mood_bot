@@ -12,6 +12,7 @@ import java.util.Map;
 @Repository
 public class UserFakeRepository implements UserRepository {
     private Map<Long, User> userMap = new HashMap<>();
+
     @Override
     public List<User> findAll() {
         return new ArrayList<>(userMap.values());
