@@ -7,12 +7,6 @@ public class User {
     private long clientId;
     private long chatId;
 
-    public User(long id, long clientId, long chatId) {
-        this.id = id;
-        this.clientId = clientId;
-        this.chatId = chatId;
-    }
-
     public long getId() {
         return id;
     }
