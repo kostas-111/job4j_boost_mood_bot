@@ -18,24 +18,33 @@ public class Mood {
 
     private boolean good;
 
-    public Long getId() {
-        return id;
+    public Mood(String text, boolean good) {
+        this.text = text;
+        this.good = good;
     }
 
-    public void setId(Long id) {
-        this.id = id;
+    public Mood() {
+
+    }
+
+    public Long getId() {
+        return id;
     }
 
     public String getText() {
         return text;
     }
 
-    public void setText(String text) {
-        this.text = text;
-    }
-
     public boolean isGood() {
         return good;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public void setText(String text) {
+        this.text = text;
     }
 
     public void setGood(boolean good) {

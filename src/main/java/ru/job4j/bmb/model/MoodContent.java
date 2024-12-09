@@ -22,24 +22,33 @@ public class MoodContent {
 
     private String text;
 
-    public Long getId() {
-        return id;
+    public MoodContent(Mood mood, String text) {
+        this.mood = mood;
+        this.text = text;
     }
 
-    public void setId(Long id) {
-        this.id = id;
+    public MoodContent() {
+
+    }
+
+    public Long getId() {
+        return id;
     }
 
     public Mood getMood() {
         return mood;
     }
 
-    public void setMood(Mood mood) {
-        this.mood = mood;
-    }
-
     public String getText() {
         return text;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public void setMood(Mood mood) {
+        this.mood = mood;
     }
 
     public void setText(String text) {
