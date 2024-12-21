@@ -56,40 +56,37 @@ public class TelegramBotService extends TelegramLongPollingBot implements BeanNa
         long chatId = content.getChatId();
         String contentText = content.getText();
         InlineKeyboardMarkup contentMarkup = content.getMarkup();
-        if (content.getAudio() != null) {
-            SendAudio sendAudio = new SendAudio();
-            sendAudio.setChatId(chatId);
-            sendAudio.setAudio(content.getAudio());
-            if (!contentText.isBlank()) {
-                sendAudio.setTitle(contentText);
+            if (content.getAudio() != null) {
+                SendAudio sendAudio = new SendAudio();
+                sendAudio.setChatId(chatId);
+                sendAudio.setAudio(content.getAudio());
+                if (!contentText.isBlank()) {
+                    sendAudio.setTitle(contentText);
+                }
+            } else if (!contentText.isBlank() && contentMarkup != null) {
+                SendMessage message = new SendMessage();
+                message.setChatId(chatId);
+                message.setText(contentText);
+                message.setReplyMarkup(content.getMarkup());
+                sendNewMessage(message);
+            } else if (!contentText.isBlank() && contentMarkup == null && content.getAudio() == null && content.getPhoto() == null) {
+                SendMessage message = new SendMessage();
+                sendNewMessage(message);
+            } else if (content.getPhoto() != null) {
+                SendPhoto sendPhoto = new SendPhoto();
+                sendPhoto.setChatId(chatId);
+                sendPhoto.setPhoto(content.getPhoto());
+                if (!contentText.isBlank()) {
+                    sendPhoto.setCaption(contentText);
+                }
             }
-        }
-        if (!contentText.isBlank() && contentMarkup != null) {
-            SendMessage message = new SendMessage();
-            message.setChatId(chatId);
-            message.setText(contentText);
-            message.setReplyMarkup(content.getMarkup());
-            try {
-                execute(message);
-            } catch (TelegramApiException e) {
-                e.printStackTrace();
-            }
-        }
-        if (!contentText.isBlank() && contentMarkup == null && content.getAudio() == null && content.getPhoto() == null) {
-            SendMessage message = new SendMessage();
-            try {
-                execute(message);
-            } catch (TelegramApiException e) {
-                e.printStackTrace();
-            }
-        }
-        if (content.getPhoto() != null) {
-            SendPhoto sendPhoto = new SendPhoto();
-            sendPhoto.setChatId(chatId);
-            sendPhoto.setPhoto(content.getPhoto());
-            if (!contentText.isBlank()) {
-                sendPhoto.setCaption(contentText);
-            }
+    }
+
+    private void sendNewMessage(SendMessage message) {
+        try {
+            execute(message);
+        } catch (TelegramApiException e) {
+            e.printStackTrace();
         }
     }
 
