@@ -12,32 +12,44 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import ru.job4j.bmb.content.Content;
-import ru.job4j.bmb.model.User;
-import ru.job4j.bmb.repository.UserRepository;
+import ru.job4j.bmb.repository.MoodLogRepository;
+import java.time.LocalDate;
+import java.time.ZoneId;
 
 @Service
 public class ReminderService implements BeanNameAware {
 
-    private String beanName;
-    private final TelegramBotService tgBotService;
-    private final UserRepository userRepository;
+    private final SentContent sentContent;
+    private final MoodLogRepository moodLogRepository;
+    private final TgUI tgUI;
 
-    public ReminderService(TelegramBotService tgBotService, UserRepository userRepository) {
-        this.tgBotService = tgBotService;
-        this.userRepository = userRepository;
+    private String beanName;
+
+    public ReminderService(SentContent sentContent, MoodLogRepository moodLogRepository, TgUI tgUI) {
+        this.sentContent = sentContent;
+        this.moodLogRepository = moodLogRepository;
+        this.tgUI = tgUI;
     }
 
     /*
-     Метод отправляет сообщения "Ping" через интервал, заданный в application.properties
-     */
-    @Scheduled(fixedRateString = "${remind.period}")
-    public void ping() {
-        var user = userRepository.findAll().stream()
-                .reduce((first, last) -> last);
-        if (user.isPresent()) {
-            Content message = new Content(user.get().getChatId());
-            message.setText("Ping");
-            tgBotService.sent(message);
+    Метод отправляет сообщение с предложением оценить настроение ежедневно.
+    Если пользователь уже выбрал настроение за текущий день, сообщение отправлять не нужно.
+    */
+    @Scheduled(fixedRateString = "${recommendation.alert.period}")
+    public void remindUsers() {
+        var startOfDay = LocalDate.now()
+                .atStartOfDay(ZoneId.systemDefault())
+                .toInstant()
+                .toEpochMilli();
+        var endOfDay = LocalDate.now()
+                .atStartOfDay(ZoneId.systemDefault())
+                .toInstant()
+                .toEpochMilli() - 1;
+        for (var user : moodLogRepository.findUsersWhoDidNotVoteToday(startOfDay, endOfDay)) {
+            var content = new Content(user.getChatId());
+            content.setText("Как настроение?");
+            content.setMarkup(tgUI.buildButtons());
+            sentContent.sent(content);
         }
     }
 
