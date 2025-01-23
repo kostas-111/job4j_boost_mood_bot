@@ -62,7 +62,7 @@ public class MoodService implements BeanNameAware {
         long startMillis = startDay.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli();
         long endMillis = endDay.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli();
         List<MoodLog> weekLogs = moodLogRepository.
-                findByUserAndCreateAtBetween(user, startMillis, endMillis);
+                findByUsersAndCreateAtBetween(user, startMillis, endMillis);
         String logMessage = formatMoodLogs(weekLogs,  "Настроение пользователя за прошедшую неделю");
         var content = new Content(chatId);
         content.setText(logMessage);
@@ -80,7 +80,7 @@ public class MoodService implements BeanNameAware {
         long startMillis = startDay.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli();
         long endMillis = endDay.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli();
         List<MoodLog> monthLogs = moodLogRepository.
-                findByUserAndCreateAtBetween(user, startMillis, endMillis);
+                findByUsersAndCreateAtBetween(user, startMillis, endMillis);
         String logMessage = formatMoodLogs(monthLogs,  "Настроение пользователя за прошедший месяц");
         var content = new Content(chatId);
         content.setText(logMessage);

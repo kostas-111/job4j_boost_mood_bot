@@ -41,11 +41,7 @@ public class ReminderService implements BeanNameAware {
                 .atStartOfDay(ZoneId.systemDefault())
                 .toInstant()
                 .toEpochMilli();
-        var endOfDay = LocalDate.now()
-                .atStartOfDay(ZoneId.systemDefault())
-                .toInstant()
-                .toEpochMilli() - 1;
-        for (var user : moodLogRepository.findUsersWhoDidNotVoteToday(startOfDay, endOfDay)) {
+        for (var user : moodLogRepository.findUserWhoDidNotVoteToday(startOfDay)) {
             var content = new Content(user.getChatId());
             content.setText("Как настроение?");
             content.setMarkup(tgUI.buildButtons());

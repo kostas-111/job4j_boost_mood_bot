@@ -5,6 +5,7 @@ import org.springframework.stereotype.Repository;
 import ru.job4j.bmb.model.MoodLog;
 import ru.job4j.bmb.model.User;
 import java.util.List;
+import java.util.stream.Stream;
 
 /*
 Компонент хранения данных
@@ -15,7 +16,15 @@ import java.util.List;
 public interface MoodLogRepository extends CrudRepository<MoodLog, Long> {
     List<MoodLog> findAll();
 
-    List<MoodLog> findByUserAndCreateAtBetween(User user, long startDay, long endDay);
+    List<MoodLog> findByUserId(Long userId);
 
-    List<User> findUsersWhoDidNotVoteToday(long startOfDay, long endOfDay);
+    Stream<MoodLog> findByUserIdOrderByCreateAtDesc(Long userId);
+
+    List<MoodLog> findMoodLogsForWeek(Long userId, long weekStart);
+
+    List<MoodLog> findMoodLogsForMonth(Long userId, long monthStart);
+
+    List<User> findUserWhoDidNotVoteToday(long startOfDay);
+
+    List<MoodLog> findByUsersAndCreateAtBetween(User user, long startDay, long endDay);
 }
