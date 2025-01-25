@@ -32,9 +32,5 @@ public class AchievementService implements ApplicationListener<UserEvent> {
     @Override
     public void onApplicationEvent(UserEvent event) {
         var user = event.getUser();
-        // Логика вычисления достижения и отправки уведомления
-        Content content = new Content(user.getChatId());
-        content.setText(achievements.toString());
-        sentContent.sent(content);
     }
 }

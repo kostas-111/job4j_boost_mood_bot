@@ -27,8 +27,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Service
-public class MoodService implements BeanNameAware {
-    private String beanName;
+public class MoodService {
     private final ApplicationEventPublisher publisher;
     private final MoodRepository moodRepository;
     private final MoodLogRepository moodLogRepository;
@@ -40,7 +39,9 @@ public class MoodService implements BeanNameAware {
             .ofPattern("dd-MM-yyyy HH:mm")
             .withZone(ZoneId.systemDefault());
 
-    public MoodService(ApplicationEventPublisher publisher, MoodRepository moodRepository, MoodLogRepository moodLogRepository,
+    public MoodService(ApplicationEventPublisher publisher,
+                       MoodRepository moodRepository,
+                       MoodLogRepository moodLogRepository,
                        UserRepository userRepository,
                        AchievementRepository achievementRepository,
                        RecommendationEngine recommendationEngine,
@@ -60,7 +61,7 @@ public class MoodService implements BeanNameAware {
     public Content chooseMood(User user, Long moodId) {
         moodRepository.findById(moodId)
                 .ifPresent(mood -> {
-                    MoodLog log = new MoodLog();
+                    MoodLog log = new MoodLog(user, mood, Instant.now().getEpochSecond());
                     publisher.publishEvent(new UserEvent(this, user));
                     moodLogRepository.save(log);
                 });
@@ -74,9 +75,7 @@ public class MoodService implements BeanNameAware {
         User user = userRepository.findById(clientId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
         LocalDateTime startDay = LocalDateTime.now().minusDays(7);
-        //LocalDateTime endDay = LocalDateTime.now();
         long startMillis = startDay.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli();
-        //long endMillis = endDay.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli();
         List<MoodLog> weekLogs = moodLogService.findMoodLogsForWeek(clientId, startMillis);
         String logMessage = formatMoodLogs(weekLogs,  "Настроение пользователя за прошедшую неделю");
         var content = new Content(chatId);
@@ -91,9 +90,7 @@ public class MoodService implements BeanNameAware {
         User user = userRepository.findById(clientId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
         LocalDateTime startDay = LocalDateTime.now().minusMonths(1);
-        //LocalDateTime endDay = LocalDateTime.now();
         long startMillis = startDay.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli();
-        //long endMillis = endDay.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli();
         List<MoodLog> monthLogs = moodLogService.findMoodLogsForMonth(clientId, startMillis);
         String logMessage = formatMoodLogs(monthLogs,  "Настроение пользователя за прошедший месяц");
         var content = new Content(chatId);
@@ -132,24 +129,5 @@ public class MoodService implements BeanNameAware {
             sb.append(formattedDate).append(": ").append(log.getMood().getText()).append("\n");
         });
         return sb.toString();
-    }
-
-    @PostConstruct
-    public void init() {
-        System.out.println("Bean is going through init.");
-    }
-
-    @PreDestroy
-    public void destroy() {
-        System.out.println("Bean will be destroyed now.");
-    }
-
-    @Override
-    public void setBeanName(String name) {
-        this.beanName = name;
-    }
-
-    public void printBeanName() {
-        System.out.println("Bean name in context: " + beanName);
     }
 }
