@@ -24,7 +24,9 @@ public class BotCommandHandler implements BeanNameAware {
     private final TgUI tgUI;
     private String beanName;
 
-    public BotCommandHandler(UserRepository userRepository, MoodService moodService, TgUI tgUI) {
+    public BotCommandHandler(UserRepository userRepository,
+                             MoodService moodService,
+                             TgUI tgUI) {
         this.userRepository = userRepository;
         this.moodService = moodService;
         this.tgUI = tgUI;

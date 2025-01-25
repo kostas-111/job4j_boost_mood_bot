@@ -56,9 +56,4 @@ public class MoodLogFakeRepository
                 .distinct()
                 .collect(Collectors.toList());
     }
-
-    @Override
-    public List<MoodLog> findByUsersAndCreateAtBetween(User user, long startDay, long endDay) {
-        return null;
-    }
 }

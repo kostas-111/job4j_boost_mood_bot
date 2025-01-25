@@ -25,6 +25,4 @@ public interface MoodLogRepository extends CrudRepository<MoodLog, Long> {
     List<MoodLog> findMoodLogsForMonth(Long userId, long monthStart);
 
     List<User> findUserWhoDidNotVoteToday(long startOfDay);
-
-    List<MoodLog> findByUsersAndCreateAtBetween(User user, long startDay, long endDay);
 }
