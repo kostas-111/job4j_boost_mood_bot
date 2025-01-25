@@ -27,6 +27,7 @@ class ReminderServiceTest {
         var moodRepository = new MoodFakeRepository();
         moodRepository.save(new Mood("Good", true));
         var moodLogRepository = new MoodLogFakeRepository();
+        var moodLogService = new MoodLogService(moodLogRepository);
         var user = new User();
         user.setChatId(100);
         var moodLog = new MoodLog();
@@ -39,7 +40,7 @@ class ReminderServiceTest {
         moodLog.setCreateAt(yesterday);
         moodLogRepository.save(moodLog);
         var tgUI = new TgUI(moodRepository);
-        new ReminderService(sentContent, moodLogRepository, tgUI)
+        new ReminderService(sentContent, moodLogRepository, tgUI, moodLogService)
                 .remindUsers();
         assertThat(result.iterator().next().getMarkup().getKeyboard()
                     .iterator().next().iterator().next().getText()).isEqualTo("Good");

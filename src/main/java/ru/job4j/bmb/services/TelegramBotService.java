@@ -6,10 +6,6 @@ Oсновной класс, использует Telegram API для получ�
 Класс описывает интеграцию с Telegram API
  */
 
-import jakarta.annotation.PostConstruct;
-import jakarta.annotation.PreDestroy;
-import org.apache.logging.log4j.message.Message;
-import org.springframework.beans.factory.BeanNameAware;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
@@ -22,10 +18,9 @@ import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import ru.job4j.bmb.content.Content;
 
 @Service
-public class TelegramBotService extends TelegramLongPollingBot implements BeanNameAware, SentContent {
+public class TelegramBotService extends TelegramLongPollingBot implements SentContent {
     private final BotCommandHandler handler;
     private final String botName;
-    private String beanName;
 
     public TelegramBotService(@Value("${telegram.bot.name}") String botName,
                               @Value("${telegram.bot.token}") String botToken,
@@ -41,7 +36,7 @@ public class TelegramBotService extends TelegramLongPollingBot implements BeanNa
             handler.handleCallback(update.getCallbackQuery())
                     .ifPresent(this::sent);
         } else if (update.hasMessage() && update.getMessage().getText() != null) {
-            handler.commands((Message) update.getMessage())
+            handler.commands(update.getMessage())
                     .ifPresent(this::sent);
         }
     }
@@ -94,22 +89,4 @@ public class TelegramBotService extends TelegramLongPollingBot implements BeanNa
         handler.receive(content);
     }
 
-    @PostConstruct
-    public void init() {
-        System.out.println("Bean is going through init.");
-    }
-
-    @PreDestroy
-    public void destroy() {
-        System.out.println("Bean will be destroyed now.");
-    }
-
-    @Override
-    public void setBeanName(String name) {
-        this.beanName = name;
-    }
-
-    public void printBeanName() {
-        System.out.println("Bean name in context: " + beanName);
-    }
 }

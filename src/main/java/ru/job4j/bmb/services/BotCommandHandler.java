@@ -5,12 +5,9 @@ package ru.job4j.bmb.services;
 Класс для обработки команд, поступающих от пользователей
  */
 
-import jakarta.annotation.PostConstruct;
-import jakarta.annotation.PreDestroy;
-import org.apache.logging.log4j.message.Message;
-import org.springframework.beans.factory.BeanNameAware;
 import org.springframework.stereotype.Service;
 import org.telegram.telegrambots.meta.api.objects.CallbackQuery;
+import org.telegram.telegrambots.meta.api.objects.Message;
 import ru.job4j.bmb.content.Content;
 import ru.job4j.bmb.model.User;
 import ru.job4j.bmb.repository.UserRepository;
@@ -18,13 +15,14 @@ import ru.job4j.bmb.repository.UserRepository;
 import java.util.Optional;
 
 @Service
-public class BotCommandHandler implements BeanNameAware {
+public class BotCommandHandler {
     private final UserRepository userRepository;
     private final MoodService moodService;
     private final TgUI tgUI;
-    private String beanName;
 
-    public BotCommandHandler(UserRepository userRepository, MoodService moodService, TgUI tgUI) {
+    public BotCommandHandler(UserRepository userRepository,
+                             MoodService moodService,
+                             TgUI tgUI) {
         this.userRepository = userRepository;
         this.moodService = moodService;
         this.tgUI = tgUI;
@@ -37,13 +35,12 @@ public class BotCommandHandler implements BeanNameAware {
     выполнения команды, либо пустое значение, если команда не распознана
      */
     Optional<Content> commands(Message message) {
-        var user = new User();
-        long userId = Long.parseLong(userRepository.findById(user.getId()).toString());
-        long chatId = Long.parseLong(userRepository.findById(user.getChatId()).toString());
-        String userMessage = message.getFormattedMessage();
+        long userId = message.getFrom().getId();
+        long chatId = message.getChatId();
+        String userMessage = message.getText();
         Optional<Content> content = Optional.empty();
         if ("/start".equals(userMessage)) {
-            content = handleStartCommand(user.getChatId(), user.getClientId());
+            content = handleStartCommand(chatId, userId);
         }
         if ("/week_mood_log".equals(userMessage)) {
             content = moodService.weekMoodLogCommand(chatId, userId);
@@ -76,24 +73,5 @@ public class BotCommandHandler implements BeanNameAware {
 
     void receive(Content content) {
         System.out.println(content);
-    }
-
-    @PostConstruct
-    public void init() {
-        System.out.println("Bean is going through init.");
-    }
-
-    @PreDestroy
-    public void destroy() {
-        System.out.println("Bean will be destroyed now.");
-    }
-
-    @Override
-    public void setBeanName(String name) {
-        this.beanName = name;
-    }
-
-    public void printBeanName() {
-        System.out.println("Bean name in context: " + beanName);
     }
 }
