@@ -5,30 +5,29 @@ package ru.job4j.bmb.services;
 Класс, который управляет ежедневными напоминаниями и уведомлениями
  */
 
-import jakarta.annotation.PostConstruct;
-import jakarta.annotation.PreDestroy;
-import org.springframework.beans.factory.BeanNameAware;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
-import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import ru.job4j.bmb.content.Content;
 import ru.job4j.bmb.repository.MoodLogRepository;
 import java.time.LocalDate;
 import java.time.ZoneId;
 
 @Service
-public class ReminderService implements BeanNameAware {
+public class ReminderService {
 
     private final SentContent sentContent;
     private final MoodLogRepository moodLogRepository;
     private final TgUI tgUI;
+    private final MoodLogService moodLogService;
 
-    private String beanName;
-
-    public ReminderService(SentContent sentContent, MoodLogRepository moodLogRepository, TgUI tgUI) {
+    public ReminderService(SentContent sentContent,
+                           MoodLogRepository moodLogRepository,
+                           TgUI tgUI,
+                           MoodLogService moodLogService) {
         this.sentContent = sentContent;
         this.moodLogRepository = moodLogRepository;
         this.tgUI = tgUI;
+        this.moodLogService = moodLogService;
     }
 
     /*
@@ -41,30 +40,11 @@ public class ReminderService implements BeanNameAware {
                 .atStartOfDay(ZoneId.systemDefault())
                 .toInstant()
                 .toEpochMilli();
-        for (var user : moodLogRepository.findUserWhoDidNotVoteToday(startOfDay)) {
+        for (var user : moodLogService.findUserWhoDidNotVoteToday(startOfDay)) {
             var content = new Content(user.getChatId());
             content.setText("Как настроение?");
             content.setMarkup(tgUI.buildButtons());
             sentContent.sent(content);
         }
-    }
-
-    @PostConstruct
-    public void init() {
-        System.out.println("Bean is going through init.");
-    }
-
-    @PreDestroy
-    public void destroy() {
-        System.out.println("Bean will be destroyed now.");
-    }
-
-    @Override
-    public void setBeanName(String name) {
-        this.beanName = name;
-    }
-
-    public void printBeanName() {
-        System.out.println("Bean name in context: " + beanName);
     }
 }
