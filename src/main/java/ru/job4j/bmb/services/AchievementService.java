@@ -5,32 +5,36 @@ package ru.job4j.bmb.services;
 Класс, который следит за достижениями пользователя и награждает его за выполнение определенных действий
  */
 
-import jakarta.annotation.PostConstruct;
-import jakarta.annotation.PreDestroy;
-import org.springframework.beans.factory.BeanNameAware;
+import org.springframework.context.ApplicationListener;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import ru.job4j.bmb.content.Content;
+import ru.job4j.bmb.model.UserEvent;
+import ru.job4j.bmb.repository.AwardRepository;
+import ru.job4j.bmb.repository.MoodLogRepository;
 
 @Service
-public class AchievementService implements BeanNameAware {
+public class AchievementService implements ApplicationListener<UserEvent> {
 
-    private String beanName;
+    private final SentContent sentContent;
+    private final AwardRepository awardRepository;
+    private final MoodLogRepository moodLogRepository;
 
-    @PostConstruct
-    public void init() {
-        System.out.println("Bean is going through init.");
+    public AchievementService(SentContent sentContent,
+                              AwardRepository awardRepository,
+                              MoodLogRepository moodLogRepository) {
+        this.sentContent = sentContent;
+        this.awardRepository = awardRepository;
+        this.moodLogRepository = moodLogRepository;
     }
 
-    @PreDestroy
-    public void destroy() {
-        System.out.println("Bean will be destroyed now.");
-    }
-
+    @Transactional
     @Override
-    public void setBeanName(String name) {
-        this.beanName = name;
-    }
-
-    public void printBeanName() {
-        System.out.println("Bean name in context: " + beanName);
+    public void onApplicationEvent(UserEvent event) {
+        var user = event.getUser();
+        // Логика вычисления достижения и отправки уведомления
+        Content content = new Content(user.getChatId());
+        content.setText(achievements.toString());
+        sentContent.sent(content);
     }
 }

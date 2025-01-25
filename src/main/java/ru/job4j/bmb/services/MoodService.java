@@ -8,13 +8,16 @@ package ru.job4j.bmb.services;
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.PreDestroy;
 import org.springframework.beans.factory.BeanNameAware;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import ru.job4j.bmb.content.Content;
 import ru.job4j.bmb.model.Achievement;
 import ru.job4j.bmb.model.MoodLog;
 import ru.job4j.bmb.model.User;
+import ru.job4j.bmb.model.UserEvent;
 import ru.job4j.bmb.repository.AchievementRepository;
 import ru.job4j.bmb.repository.MoodLogRepository;
+import ru.job4j.bmb.repository.MoodRepository;
 import ru.job4j.bmb.repository.UserRepository;
 import java.time.Instant;
 import java.time.LocalDateTime;
@@ -26,6 +29,8 @@ import java.util.Optional;
 @Service
 public class MoodService implements BeanNameAware {
     private String beanName;
+    private final ApplicationEventPublisher publisher;
+    private final MoodRepository moodRepository;
     private final MoodLogRepository moodLogRepository;
     private final UserRepository userRepository;
     private final AchievementRepository achievementRepository;
@@ -34,10 +39,12 @@ public class MoodService implements BeanNameAware {
             .ofPattern("dd-MM-yyyy HH:mm")
             .withZone(ZoneId.systemDefault());
 
-    public MoodService(MoodLogRepository moodLogRepository,
+    public MoodService(ApplicationEventPublisher publisher, MoodRepository moodRepository, MoodLogRepository moodLogRepository,
                        UserRepository userRepository,
                        AchievementRepository achievementRepository,
                        RecommendationEngine recommendationEngine) {
+        this.publisher = publisher;
+        this.moodRepository = moodRepository;
         this.moodLogRepository = moodLogRepository;
         this.userRepository = userRepository;
         this.achievementRepository = achievementRepository;
@@ -48,6 +55,12 @@ public class MoodService implements BeanNameAware {
     Метод позволяет пользователю выбрать текущее настроение и фиксирует этот выбор в логе событий
      */
     public Content chooseMood(User user, Long moodId) {
+        moodRepository.findById(moodId)
+                .ifPresent(mood -> {
+                    MoodLog log = new MoodLog();
+                    publisher.publishEvent(new UserEvent(this, user));
+                    moodLogRepository.save(log);
+                });
         return recommendationEngine.recommendFor(user.getChatId(), moodId);
     }
 
