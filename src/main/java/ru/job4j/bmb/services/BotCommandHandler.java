@@ -64,9 +64,7 @@ public class BotCommandHandler {
         var user = new User();
         user.setClientId(clientId);
         user.setChatId(chatId);
-        if (userRepository.findByClientId(clientId).getClientId() != user.getClientId()) {
-            userRepository.save(user);
-        }
+        userRepository.save(user);
         var content = new Content(user.getChatId());
         content.setText("Как настроение?");
         content.setMarkup(tgUI.buildButtons());
