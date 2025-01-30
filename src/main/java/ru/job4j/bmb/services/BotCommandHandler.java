@@ -56,7 +56,7 @@ public class BotCommandHandler {
 
     Optional<Content> handleCallback(CallbackQuery callback) {
         var moodId = Long.valueOf(callback.getData());
-        var user = userRepository.findById(callback.getFrom().getId());
+        var user = userRepository.findByClientId(callback.getFrom().getId());
         return user.map(value -> moodService.chooseMood(value, moodId));
     }
 
@@ -64,14 +64,12 @@ public class BotCommandHandler {
         var user = new User();
         user.setClientId(clientId);
         user.setChatId(chatId);
-        userRepository.save(user);
+        if (userRepository.findByClientId(user.getClientId()).isEmpty()) {
+            userRepository.save(user);
+        }
         var content = new Content(user.getChatId());
         content.setText("Как настроение?");
         content.setMarkup(tgUI.buildButtons());
         return Optional.of(content);
-    }
-
-    void receive(Content content) {
-        System.out.println(content);
     }
 }

@@ -48,32 +48,36 @@ public class TelegramBotService extends TelegramLongPollingBot implements SentCo
 
     @Override
     public void sent(Content content) {
-        long chatId = content.getChatId();
+        String chatId = String.valueOf(content.getChatId());
         String contentText = content.getText();
         InlineKeyboardMarkup contentMarkup = content.getMarkup();
             if (content.getAudio() != null) {
                 SendAudio sendAudio = new SendAudio();
                 sendAudio.setChatId(chatId);
                 sendAudio.setAudio(content.getAudio());
-                if (!contentText.isBlank()) {
+                if (!content.getText().isBlank()) {
                     sendAudio.setTitle(contentText);
                 }
-            } else if (!contentText.isBlank() && contentMarkup != null) {
+            }
+            if (content.getPhoto() != null) {
+                SendPhoto sendPhoto = new SendPhoto();
+                sendPhoto.setChatId(chatId);
+                sendPhoto.setPhoto(content.getPhoto());
+                if (!content.getText().isBlank()) {
+                    sendPhoto.setCaption(contentText);
+                }
+            }
+            if (!content.getText().isBlank() && contentMarkup != null) {
                 SendMessage message = new SendMessage();
                 message.setChatId(chatId);
-                message.setText(contentText);
+                message.setText(content.getText());
                 message.setReplyMarkup(content.getMarkup());
                 sendNewMessage(message);
             } else if (!contentText.isBlank() && contentMarkup == null && content.getAudio() == null && content.getPhoto() == null) {
                 SendMessage message = new SendMessage();
+                message.setChatId(chatId);
+                message.setText(content.getText());
                 sendNewMessage(message);
-            } else if (content.getPhoto() != null) {
-                SendPhoto sendPhoto = new SendPhoto();
-                sendPhoto.setChatId(chatId);
-                sendPhoto.setPhoto(content.getPhoto());
-                if (!contentText.isBlank()) {
-                    sendPhoto.setCaption(contentText);
-                }
             }
     }
 
@@ -84,9 +88,4 @@ public class TelegramBotService extends TelegramLongPollingBot implements SentCo
             e.printStackTrace();
         }
     }
-
-    public void content(Content content) {
-        handler.receive(content);
-    }
-
 }

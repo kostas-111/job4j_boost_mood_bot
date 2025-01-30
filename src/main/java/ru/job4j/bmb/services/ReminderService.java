@@ -36,7 +36,8 @@ public class ReminderService {
     */
     @Scheduled(fixedRateString = "${recommendation.alert.period}")
     public void remindUsers() {
-        var startOfDay = LocalDate.now()
+        var startOfDay = LocalDate
+                .now()
                 .atStartOfDay(ZoneId.systemDefault())
                 .toInstant()
                 .toEpochMilli();

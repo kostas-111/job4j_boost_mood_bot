@@ -5,49 +5,25 @@ package ru.job4j.bmb.services;
 Основной класс, который на основе настроения пользователя выбирает соответствующий контент
  */
 
-import jakarta.annotation.PostConstruct;
-import jakarta.annotation.PreDestroy;
-import org.springframework.beans.factory.BeanNameAware;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import ru.job4j.bmb.content.Content;
-import ru.job4j.bmb.content.ContentProvider;
-
-import java.util.List;
-import java.util.Random;
+import ru.job4j.bmb.repository.MoodContentRepository;
 
 @Service
-public class RecommendationEngine implements BeanNameAware {
+public class RecommendationEngine {
 
-    private String beanName;
+    private final MoodContentRepository moodContentRepository;
 
-    private final List<ContentProvider> contents;
-    private static final Random RND = new Random(System.currentTimeMillis());
-
-    public RecommendationEngine(List<ContentProvider> contents) {
-        this.contents = contents;
+    @Autowired
+    public RecommendationEngine(MoodContentRepository moodContentRepository) {
+        this.moodContentRepository = moodContentRepository;
     }
 
     public Content recommendFor(Long chatId, Long moodId) {
-        var index = RND.nextInt(0, contents.size());
-        return contents.get(index).byMood(chatId, moodId);
-    }
-
-    @PostConstruct
-    public void init() {
-        System.out.println("Bean is going through init.");
-    }
-
-    @PreDestroy
-    public void destroy() {
-        System.out.println("Bean will be destroyed now.");
-    }
-
-    @Override
-    public void setBeanName(String name) {
-        this.beanName = name;
-    }
-
-    public void printBeanName() {
-        System.out.println("Bean name in context: " + beanName);
+        Content content = new Content(chatId);
+        moodContentRepository.findByMoodId(moodId)
+                .ifPresent(moodContent -> content.setText(moodContent.getText()));
+        return content;
     }
 }

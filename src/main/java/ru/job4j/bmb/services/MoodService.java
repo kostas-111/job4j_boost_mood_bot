@@ -5,16 +5,10 @@ package ru.job4j.bmb.services;
 Класс, отвечающий за обработку запросов пользователя в зависимости от его настроения
  */
 
-import jakarta.annotation.PostConstruct;
-import jakarta.annotation.PreDestroy;
-import org.springframework.beans.factory.BeanNameAware;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import ru.job4j.bmb.content.Content;
-import ru.job4j.bmb.model.Achievement;
-import ru.job4j.bmb.model.MoodLog;
-import ru.job4j.bmb.model.User;
-import ru.job4j.bmb.model.UserEvent;
+import ru.job4j.bmb.model.*;
 import ru.job4j.bmb.repository.AchievementRepository;
 import ru.job4j.bmb.repository.MoodLogRepository;
 import ru.job4j.bmb.repository.MoodRepository;
@@ -59,11 +53,13 @@ public class MoodService {
     Метод позволяет пользователю выбрать текущее настроение и фиксирует этот выбор в логе событий
      */
     public Content chooseMood(User user, Long moodId) {
+        LocalDateTime startDay = LocalDateTime.now();
+        long startMillis = startDay.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli();
         moodRepository.findById(moodId)
                 .ifPresent(mood -> {
-                    MoodLog log = new MoodLog(user, mood, Instant.now().getEpochSecond());
-                    publisher.publishEvent(new UserEvent(this, user));
+                    MoodLog log = new MoodLog(user, mood, startMillis);
                     moodLogRepository.save(log);
+                    publisher.publishEvent(new UserEvent(this, user));
                 });
         return recommendationEngine.recommendFor(user.getChatId(), moodId);
     }
@@ -72,11 +68,11 @@ public class MoodService {
     Метод возвращает лог настроений пользователя за прошедшую неделю
      */
     public Optional<Content> weekMoodLogCommand(long chatId, Long clientId) {
-        User user = userRepository.findById(clientId)
+        User user = userRepository.findByClientId(clientId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
         LocalDateTime startDay = LocalDateTime.now().minusDays(7);
         long startMillis = startDay.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli();
-        List<MoodLog> weekLogs = moodLogService.findMoodLogsForWeek(clientId, startMillis);
+        List<MoodLog> weekLogs = moodLogService.findMoodLogsForWeek(user.getId(), startMillis);
         String logMessage = formatMoodLogs(weekLogs,  "Настроение пользователя за прошедшую неделю");
         var content = new Content(chatId);
         content.setText(logMessage);
@@ -87,11 +83,11 @@ public class MoodService {
     Метод возвращает лог настроений пользователя за прошедший месяц
      */
     public Optional<Content> monthMoodLogCommand(long chatId, Long clientId) {
-        User user = userRepository.findById(clientId)
+        User user = userRepository.findByClientId(clientId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
         LocalDateTime startDay = LocalDateTime.now().minusMonths(1);
         long startMillis = startDay.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli();
-        List<MoodLog> monthLogs = moodLogService.findMoodLogsForMonth(clientId, startMillis);
+        List<MoodLog> monthLogs = moodLogService.findMoodLogsForMonth(user.getId(), startMillis);
         String logMessage = formatMoodLogs(monthLogs,  "Настроение пользователя за прошедший месяц");
         var content = new Content(chatId);
         content.setText(logMessage);
@@ -102,15 +98,10 @@ public class MoodService {
     Метод возвращает список наград, которые пользователь получил за поддержание хорошего настроения
      */
     public Optional<Content> awards(long chatId, Long clientId) {
-        User user = userRepository.findById(clientId)
+        User user = userRepository.findByClientId(clientId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
         List<Achievement> achievements = achievementRepository.findAllByUser(user);
-        String awardMessage = "У вас отсутствуют награды за поддержание хорошего настроения";
-        if (!achievements.isEmpty()) {
-            awardMessage = achievements.stream()
-                    .map(Achievement :: getAward)
-                    .toString();
-        }
+        String awardMessage = formatAchievement(achievements, "Награды пользователя за его достижения");
         var content = new Content(chatId);
         content.setText(awardMessage);
         return Optional.of(content);
@@ -125,9 +116,21 @@ public class MoodService {
         }
         var sb = new StringBuilder(title + ":\n");
         logs.forEach(log -> {
-            String formattedDate = formatter.format(Instant.ofEpochSecond(log.getCreateAt()));
+            String formattedDate = formatter.format(Instant.ofEpochMilli(log.getCreateAt()));
             sb.append(formattedDate).append(": ").append(log.getMood().getText()).append("\n");
         });
+        return sb.toString();
+    }
+
+    private String formatAchievement(List<Achievement> achievements, String title) {
+        if (achievements.isEmpty()) {
+            return title + ": \nУ вас отсутствуют награды за поддержание хорошего настроения.";
+        }
+        var sb = new StringBuilder(title + ":\n");
+        achievements.forEach(achievement -> sb.append("Количество дней хорошего настроения: ")
+                .append(achievement.getAward().getDays()).append(". ")
+                .append(achievement.getAward().getTitle()).append(". ")
+                .append(achievement.getAward().getDescription()).append("\n"));
         return sb.toString();
     }
 }
