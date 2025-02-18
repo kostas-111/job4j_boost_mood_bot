@@ -29,6 +29,13 @@ public class Main {
     }
 
     @Bean
+    public CommandLineRunner checkEnv(ApplicationContext ctx) {
+        return args -> {
+            System.out.println(ctx.getEnvironment().getProperty("telegram.bot.name"));
+        };
+    }
+
+    @Bean
     public CommandLineRunner commandLineRunner(ApplicationContext ctx) {
         return args -> {
             var bot = ctx.getBean(TelegramLongPollingBot.class);

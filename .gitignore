@@ -16,6 +16,8 @@ hs_err_pid*
 
 target
 logs
+config/*
+dev/*
 
 out
 *.log
