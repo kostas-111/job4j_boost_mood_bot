@@ -34,7 +34,7 @@ public class BotCommandHandler {
     Он возвращает объект Optional<Content>, который содержит результат
     выполнения команды, либо пустое значение, если команда не распознана
      */
-    Optional<Content> commands(Message message) {
+    public Optional<Content> commands(Message message) {
         long userId = message.getFrom().getId();
         long chatId = message.getChatId();
         String userMessage = message.getText();
@@ -54,7 +54,7 @@ public class BotCommandHandler {
         return content;
     }
 
-    Optional<Content> handleCallback(CallbackQuery callback) {
+    public Optional<Content> handleCallback(CallbackQuery callback) {
         var moodId = Long.valueOf(callback.getData());
         var user = userRepository.findByClientId(callback.getFrom().getId());
         return user.map(value -> moodService.chooseMood(value, moodId));

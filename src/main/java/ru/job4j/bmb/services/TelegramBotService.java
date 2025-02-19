@@ -7,6 +7,7 @@ Oсновной класс, использует Telegram API для получ�
  */
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Conditional;
 import org.springframework.stereotype.Service;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.methods.send.SendAudio;
@@ -15,8 +16,10 @@ import org.telegram.telegrambots.meta.api.methods.send.SendPhoto;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
+import ru.job4j.bmb.config.DevCondition;
 import ru.job4j.bmb.content.Content;
 
+@Conditional(DevCondition.class)
 @Service
 public class TelegramBotService extends TelegramLongPollingBot implements SentContent {
     private final BotCommandHandler handler;
